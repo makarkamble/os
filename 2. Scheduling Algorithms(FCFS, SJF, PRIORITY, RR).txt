@@ -1,0 +1,371 @@
+1)FCFS
+#include <iostream>
+#include <vector>
+#include <map>
+#include <algorithm>
+using namespace std;
+
+struct process{
+int pid;
+int at;
+int bt;
+int ct;
+int tat;
+int wt;
+};
+
+bool compareInterval(process p1, process p2)
+{
+    if (p1.at == p2.at) {
+        return p1.pid < p2.pid;
+    }
+    return (p1.at < p2.at);
+}
+
+
+int main() {
+  int n;
+  vector<int> gantt;
+  map<int,int> m;
+  int time = 0,sumtat=0,sumwt=0;
+  cout<<"Enter the number of processes : ";
+  cin>>n;
+  vector<process> p(n);
+  cout<<"Enter the arrival time and burst time of each process : "<<endl;
+  for(int i=0;i<n;i++){
+    cout<<"Process "<<i+1<<endl;
+    cout<<"Process id : ";
+    cin>>p[i].pid;
+    cout<<"Arrival time : " ;
+    cin>>p[i].at;
+    cout<<"Burst time : ";
+    cin>>p[i].bt;
+  }
+
+  sort(p.begin(),p.end(),compareInterval);
+
+  for(int i=0;i<n;i++){
+    int bt = p[i].bt;
+   while(time<p[i].at){
+     gantt.push_back(0);
+     time++;
+   }
+   while(bt>0){
+     gantt.push_back(p[i].pid);
+     bt--;
+     time++;
+   }
+  }
+
+  for(int i=0;i<gantt.size();i++)
+  {
+    m[gantt[i]] = i+1; 
+  }
+  
+  cout<<endl;
+  cout<<"gantt chart: "<<endl;
+  for(int i=0;i<gantt.size();i++){
+    cout<<gantt[i]<<" ";
+  }
+  
+  cout<<endl;
+  for(int i=0;i<n;i++){
+    p[i].ct = m[p[i].pid];
+    p[i].tat = p[i].ct - p[i].at;
+    p[i].wt = p[i].tat - p[i].bt;
+    sumwt += p[i].wt;
+    sumtat += p[i].tat;
+  }
+
+  cout<<endl<<"pid\tat\tbt\tct\ttat\twt"<<endl;
+  for(int i=0;i<n;i++){
+    cout<<p[i].pid<<"\t"<<p[i].at<<"\t"<<p[i].bt<<"\t"<<p[i].ct<<"\t"<<p[i].tat<<"\t"<<p[i].wt<<endl;
+  }
+   
+  cout<<endl<<"Average waiting time : "<<(float)sumwt/n<<endl;
+  cout<<endl<<"Average turn around time : "<<(float)sumtat/n<<endl;
+
+  return 0;
+}
+
+
+
+
+
+
+
+2)SJF
+#include <bits/stdc++.h>
+#include <iomanip> 
+using namespace std;
+
+struct process {
+    int pid;
+    int bt; // Burst Time
+    int at; // Arrival Time
+    int ct; // Completion Time
+    int wt; // Waiting Time
+    int tat; // Turnaround Time
+    int completed;
+};
+
+int main() {
+    int n;
+    cout << "Enter no. of processes: ";
+    cin >> n;
+    process p[n];
+    float avg_wt = 0, avg_tat = 0;
+    int total_wt = 0, total_tat = 0;
+    // Input arrival time and burst time for each process
+    for (int i = 0; i < n; i++) {
+        cout << "Enter arrival time and burst time of process " << i + 1 << ": ";
+        p[i].pid = i + 1; // pid starts from 1
+        cin >> p[i].at >> p[i].bt;
+        p[i].completed = 0;
+    }
+    // Sort processes based on arrival time
+    sort(p, p + n, [](process& a, process& b) { return a.at < b.at; });
+
+    int current_time = 0;
+    int completed = 0;
+    // SJF Scheduling Algorithm
+    while (completed != n) {
+        int index = -1;
+        int min = 99999999;
+        // Find the process with the shortest burst time that has arrived
+        for (int i = 0; i < n; i++) {
+            if (p[i].at <= current_time && p[i].completed == 0) {
+                if (p[i].bt < min) {
+                    min = p[i].bt;
+                    index = i;
+                }
+            }
+        }
+        // Execute the selected process
+        if (index != -1) {
+            p[index].ct = current_time + p[index].bt;
+            p[index].tat = p[index].ct - p[index].at;
+            p[index].wt = p[index].tat - p[index].bt;
+            p[index].completed = 1;
+            completed++;
+            current_time = p[index].ct;
+        } else {
+            current_time++;
+        }
+    }
+    // Calculate and print average turnaround time and average waiting time
+    for (int i = 0; i < n; i++) {
+        total_wt += p[i].wt;
+        total_tat += p[i].tat;
+    }
+    avg_tat = (float)total_tat / n;
+    avg_wt = (float)total_wt / n;
+    // Print process details
+    cout << "PID" << setw(5) << "AT" << setw(5) << "BT" << setw(5) << "CT" << setw(5) << "TAT" << setw(6) << "WT\n";
+
+    for (int i = 0; i < n; i++) {
+        cout << setw(5) << p[i].pid << setw(5) << p[i].at << setw(5) << p[i].bt << setw(5) << p[i].ct << setw(5)
+             << p[i].tat << setw(5) << p[i].wt << endl;
+    }
+    cout << "Average Turnaround time: " << avg_tat << endl;
+    cout << "Average waiting time: " << avg_wt << endl;
+    return 0;}
+
+
+
+
+
+
+
+
+
+3) PRIORITY
+#include<iostream> 
+using namespace std; 
+int main(){ 
+int a[10],b[10],x[10],pr[10]={0}; 
+int waiting[10],turnaround[10],completion[10]; 
+int i,j,smallest,count=0,time,n; 
+double avg=0,tt=0,end; 
+cout<<"\nEnter the number of Processes: "; 
+
+cin>>n; 
+for(i=0;i<n;i++){ 
+cout<<"\nEnter arrival time of process P" << i + 1 << ": ";
+cin>>a[i]; 
+} 
+for(i=0;i<n;i++){ 
+cout<<"\nEnter burst time of process P" << i + 1 << ": ";
+cin>>b[i]; 
+} 
+for(i=0;i<n;i++){ 
+cout<<"\nEnter priority of process P" << i + 1 << ": ";
+cin>>pr[i]; 
+} 
+for(i=0;i<n;i++) 
+x[i]=b[i]; 
+pr[9]=-1; 
+for(time=0;count!=n;time++){ 
+smallest=9; 
+for(i=0;i<n;i++){ 
+if(a[i]<=time && pr[i]>pr[smallest] && b[i]>0 ) 
+smallest=i; 
+} 
+time+=b[smallest]-1; 
+b[smallest]=-1; 
+count++; 
+end=time+1; 
+completion[smallest] = end; 
+waiting[smallest] = end - a[smallest] - x[smallest]; 
+turnaround[smallest] = end - a[smallest]; 
+} 
+cout<<"PID"<<"\t\t"<<"BT"<<"\t\t"<<"AT" <<"\t\t"<<"WT" <<"\t\t"<<"TAT"<< "\t\t"<<"CT"<<"\t\t"<<"Priority"<<endl; 
+for(i=0;i<n;i++){ 
+cout<<"p"<<i+1<<"\t\t"<<x[i]<<"\t\t"<<a[i]<<"\t\t"<<waiting[i]<<"\t\t"<<turnaround[i]<<"\t \t"<<completion[i]<<"\t\t"<<pr[i]<<endl; 
+avg = avg + waiting[i]; 
+tt = tt + turnaround[i]; 
+} 
+cout<<"\n\nAverage waiting time ="<<avg/n; 
+cout<<" Average Turnaround time ="<<tt/n<<endl; }
+
+
+
+
+
+
+
+
+
+
+
+4) Round Robin 
+#include <algorithm>
+#include <iostream>
+#include <queue>
+#include <vector>
+using namespace std;
+
+struct Process {
+  int id;
+  int arrivalTime;
+  int burstTime;
+  int remainingTime; 
+  int completionTime;
+  int waitingTime;
+  int turnaroundTime;
+  bool inQueue;
+  int responsetime;
+  int fr;
+};
+
+bool comp(Process a, Process b) { return a.arrivalTime < b.arrivalTime; }
+
+void calculateTimes(vector<Process>& processes, int tq) {
+  queue<Process *> processQueue;
+  Process *backProcess = NULL;
+  int n = processes.size();
+  int currentTime = 0;
+
+  for (int i = 0; i < n; ++i) {
+    processes[i].remainingTime = processes[i].burstTime;
+    processes[i].waitingTime = 0;
+    processes[i].turnaroundTime = 0;
+    processes[i].inQueue = false;
+    processes[i].fr = -1;
+  }
+
+  int processedCount = 0;
+
+  while (processedCount < n) {
+    for (int i = 0; i < n; ++i) {
+      if (processes[i].arrivalTime <= currentTime && processes[i].remainingTime > 0 && !processes[i].inQueue) 
+      {
+        processQueue.push(&processes[i]);
+        processes[i].inQueue = true;
+      }
+    }
+    if (backProcess != NULL) 
+    {
+      processQueue.push(backProcess);
+      backProcess = NULL;
+    }
+    if (!processQueue.empty()) 
+    {
+      Process *currentProcess = processQueue.front(); 
+      processQueue.pop();
+      if(currentProcess->fr == -1){
+        currentProcess->fr = currentTime;
+      }
+      int executionTime = min(tq, currentProcess->remainingTime); 
+      currentProcess->remainingTime = currentProcess->remainingTime - executionTime;
+      currentTime += executionTime;
+
+      if (currentProcess->remainingTime == 0) {
+        currentProcess->completionTime = currentTime;
+        currentProcess->turnaroundTime = currentProcess->completionTime - currentProcess->arrivalTime;
+        currentProcess->waitingTime =  currentProcess->turnaroundTime - currentProcess->burstTime;
+        currentProcess->responsetime = currentProcess->fr - currentProcess->arrivalTime;
+        processedCount++;
+      }
+      if (currentProcess->remainingTime > 0) 
+      {
+        backProcess = currentProcess;
+      }
+    } else {
+      currentTime++; // Moved inside else block
+    }
+  }
+}
+
+void displayProcesses(const vector<Process> &processes) {
+  cout << "Process (Arrival Time\tBurst Time\tCompletion Time\tWait Time\tTurnaround Time\tResponse Time)\n";
+  for (const auto &process : processes)
+    { 
+    cout << process.id << "\t" << process.arrivalTime << "\t\t"
+         << process.burstTime << "\t\t" << process.completionTime << "\t\t"
+         << process.waitingTime << "\t\t" << process.turnaroundTime << "\t\t"
+         << process.responsetime << endl;
+  }
+
+}
+
+int main() {
+  int n;
+  int tq;
+  int avgtt = 0,avgwt = 0;
+
+  cout << "Enter the number of processes: ";
+  cin >> n;
+  cout << "Enter the Time Quantum: ";
+  cin >> tq;
+  vector<Process> processes(n);
+  for (int i = 0; i < n;
+       i++) { // Fixed "L" to "<" and added closing brace for the loop
+    processes[i].id = i + 1;
+    cout << "Enter arrival time for Process " << i + 1 << ": ";
+    cin >> processes[i].arrivalTime;
+    cout << "Enter burst time for Process " << i + 1 << ": ";
+    cin >> processes[i].burstTime;
+  }
+  sort(processes.begin(), processes.end(), comp);
+  calculateTimes(processes, tq);
+  displayProcesses(processes);
+  for (int i = 0; i < n; ++i){
+    avgtt += processes[i].turnaroundTime;
+    avgwt += processes[i].waitingTime;
+  }
+cout.precision(2); // Set precision to 2 decimal places
+cout << fixed;     // Fixed floating-point notation
+
+cout << "\nAverage Turnaround Time: " << fixed << static_cast<double>(avgtt) / n;
+cout << "\nAverage Waiting Time: " << fixed << static_cast<double>(avgwt) / n;
+
+  return 0;
+}
+
+
+
+
+
+
+
